@@ -11,8 +11,8 @@ app.use(express.json());
 
 // Initialize Supabase client
 const supabase = createClient(
-  process.env.SUPABASE_URL || "",
-  process.env.SUPABASE_ANON_KEY || ""
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_ANON_KEY
 );
 
 // Health check endpoint
@@ -65,15 +65,15 @@ app.post('/api/insert', async (req, res) => {
   }
 });
 
-// POST endpoint for a specific table (example)
-// You can create specific endpoints for each table
+// POST endpoint for calllogs table
 app.post('/api/calllogs', async (req, res) => {
   try {
-    const userData = req.body;
+    const callLogData = req.body;
 
+    // Insert into calllogs table
     const { data, error } = await supabase
-      .from('calllogs') // Change 'users' to your actual table name
-      .insert(userData)
+      .from('calllogs')
+      .insert(callLogData)
       .select();
 
     if (error) {
@@ -86,7 +86,71 @@ app.post('/api/calllogs', async (req, res) => {
 
     res.status(201).json({ 
       success: true,
-      message: 'User created successfully',
+      message: 'Call log created successfully',
+      data: data 
+    });
+
+  } catch (error) {
+    console.error('Server error:', error);
+    res.status(500).json({ 
+      error: 'Internal server error',
+      message: error.message 
+    });
+  }
+});
+
+// GET all call logs
+app.get('/api/calllogs', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('calllogs')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Supabase error:', error);
+      return res.status(400).json({ 
+        error: error.message,
+        details: error 
+      });
+    }
+
+    res.json({ 
+      success: true,
+      count: data.length,
+      data: data 
+    });
+
+  } catch (error) {
+    console.error('Server error:', error);
+    res.status(500).json({ 
+      error: 'Internal server error',
+      message: error.message 
+    });
+  }
+});
+
+// GET single call log by ID
+app.get('/api/calllogs/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const { data, error } = await supabase
+      .from('calllogs')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) {
+      console.error('Supabase error:', error);
+      return res.status(400).json({ 
+        error: error.message,
+        details: error 
+      });
+    }
+
+    res.json({ 
+      success: true,
       data: data 
     });
 
