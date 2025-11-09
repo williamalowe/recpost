@@ -57,12 +57,12 @@ app.post('/api/insert', async (req, res) => {
   }
 });
 
-app.post('/api/users', async (req, res) => {
+app.post('/api/calllogs', async (req, res) => {
   try {
     const userData = req.body;
 
     const { data, error } = await supabase
-      .from('users') 
+      .from('calllogs') 
       .insert(userData)
       .select();
 
